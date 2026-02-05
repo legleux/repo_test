@@ -1,0 +1,5 @@
+Types: deb
+URIs: https://legleux.github.io/repo_test/
+Suites: jammy
+Components: main
+Trusted: yes

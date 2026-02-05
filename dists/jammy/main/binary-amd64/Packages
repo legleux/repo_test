@@ -1,0 +1,18 @@
+Package: rippled
+Version: 3.1.0-1
+Architecture: amd64
+Maintainer: Ripple Labs Inc. <support@ripple.com>
+Installed-Size: 92607
+Filename: pool/main/rippled_3.1.0-1_amd64.deb
+Size: 26075596
+MD5sum: be5a2eeeba4051ff071f1ffb1d5cee79
+SHA1: 735f277d5e4811a53d665881c78a8feb98c92558
+SHA256: 58574a2299db2edf567e09efa25504677cdc66e4fa26f8a84322ab05f3a02996
+Section: net
+Priority: optional
+Multi-Arch: foreign
+Homepage: https://github.com/XRPLF/rippled.git
+Description: XRP Ledger server (rippled)
+ rippled is the core server of the XRP Ledger, providing a peer-to-peer
+ network node for validating and processing transactions.
+
