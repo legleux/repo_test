@@ -26,7 +26,7 @@ case "$REPO_TYPE" in
     mkdir -p "$DEB_DIR"
     cp "$PACKAGE_FILE" "$DEB_DIR/"
     echo "Generating Packages.gz"
-    dpkg-scanpackages "$DEB_DIR" /dev/null | gzip -9c > "$DEB_DIR/Packages.gz"
+    dpkg-scanpackages --multiversion "$DEB_DIR" /dev/null | gzip -9c > "$DEB_DIR/Packages.gz"
     ;;
   *)
     echo "Unknown repo type: $REPO_TYPE"
