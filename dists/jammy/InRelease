@@ -1,27 +1,34 @@
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA256
 
-Date: Mon, 09 Feb 2026 09:52:51 +0000
+Architectures: amd64
+Codename: jammy
+Components: main
+Date: Mon, 09 Feb 2026 10:07:50 +0000
+Description: Repo Test (jammy)
+Label: Repo Test
+Origin: Repo Test
+Suite: jammy
 MD5Sum:
- f9a4834b620db731d1ae7494cc615cf0               38 Release
+ 1a783fe6c96503f1d947fbd1864f6f08              171 Release
  1320ca11b072018aa0d1afa844f4ce06              619 main/binary-amd64/Packages
- be3ba64f94042b339d872981f2d5e2ed              446 main/binary-amd64/Packages.gz
+ 74eecac088ddff494334bf1dfbdb702f              446 main/binary-amd64/Packages.gz
 SHA1:
- b7a8a1f397ef08127e7891e832cc06f4fc129cc7               38 Release
+ c601abaaad396bec456c8f7c15d11d1a724d7dae              171 Release
  700a34dfdb1458efe1fc4982f8cfca57299ad9a0              619 main/binary-amd64/Packages
- 0a8bed8f4d2772ab24af631069a8c2afef6c9065              446 main/binary-amd64/Packages.gz
+ 88adfb6a47ee06bf9666557fee19a671bb8d54bd              446 main/binary-amd64/Packages.gz
 SHA256:
- 3b889cc8017dbf4703d51355d04477aefa17daddb64e1d4c0f9486123258b076               38 Release
+ 3ee890467ba05610b420a2615f35d71452521412c8d46d0cdeecd1a768ab7426              171 Release
  aa3e54fe5ffd577e5e9651dcc1045a935cfaaf685485a7897993435da0cf0ac6              619 main/binary-amd64/Packages
- 06e74d490dc79db6b9728e1881e492f2d55aa3c3a60f3b1216749cd4dd6a043d              446 main/binary-amd64/Packages.gz
+ 6270b507f83b4bb4e424742b99aa74fe99b94fbc74c7c486c259c273bedc15ef              446 main/binary-amd64/Packages.gz
 SHA512:
- 19a66d4528157f1e2f38625fec8023d7b4b43b8330c290b50f47c2cf4aee4f30ed59907a5705e70c069d8534715063fb3d4cc869596cd369a08c0819b88847bc               38 Release
+ 1f185a3228e543bd53b7a455703de9f0473f351cac70cdaf76299a0ce3370026affe79b82c09ef1da304ba4e45a9d9f75c7905c8145ba004484ae4efab8cb804              171 Release
  0b9fc4770e8451534fd68e4f8730f514bcea07f0a811e22fac37582446b90b18ba3c5316a6574bbf36599089411a1262ee5c9fae5a1970ba66bbfbbc5f7d97cc              619 main/binary-amd64/Packages
- b8ba928cc13df6457f18eb49905ba8edcf06d2ae1567a21f6002ec572423d1a7b1e0be72897217c29feb8e30d3e482c96f33302e06f26760d0b68928c070191f              446 main/binary-amd64/Packages.gz
+ 0d518e59c5d86f423c94786e66e3ee1f7f18fae950edbebf927d0a82b419f001e62f91b6d1f998d5ad377dfdde7c3110524e2eadae9acb42448b4dc08b459d2a              446 main/binary-amd64/Packages.gz
 -----BEGIN PGP SIGNATURE-----
 
-iHUEARYIAB0WIQQKiIpBW5BfvEXz0goZDLquSMXOHwUCaYmueQAKCRAZDLquSMXO
-H2OIAQDtupNtfLIaGqeH8GMUw/Onpq+0BhKIstDWYhHeKQGxzgEAsZbakS7QfHlE
-m/m1QPt8pFeBlxikWxtMbOxjnB0kggk=
-=8lMO
+iHUEARYIAB0WIQQKiIpBW5BfvEXz0goZDLquSMXOHwUCaYmx+AAKCRAZDLquSMXO
+H6o6AQCTdGbd9p0kqct3l33uYOTEy1vFWqQMsSCxRqRSx5H63wEAztFJGLUz/lKb
+4lo2x7FnY4IqsgBmwCEhjoZwCigD6w8=
+=VLjp
 -----END PGP SIGNATURE-----
