@@ -1,0 +1,8 @@
+*.gpg
+*.asc
+*.key
+private.key
+secring.gpg
+gnupghome
+gpg_keys
+git filter-repo --force --path path/to/key.asc --invert-paths

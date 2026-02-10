@@ -66,12 +66,13 @@ APT::FTPArchive::Release::Label "Repo Test";
 APT::FTPArchive::Release::Suite $DISTRO_CODENAME;
 APT::FTPArchive::Release::Codename $DISTRO_CODENAME;
 APT::FTPArchive::Release::Architectures $archs;
-APT::FTPArchive::Release::Component $COMPONENT;
+APT::FTPArchive::Release::Components $COMPONENT;
 APT::FTPArchive::Release::Description "Repo Test (${DISTRO_CODENAME})";
 EOF
-    apt-ftparchive release $REPO_DIR/dists/jammy > $REPO_DIR/dists/jammy/Release
+    apt-ftparchive -c apt-ftparchive.conf release $REPO_DIR/dists/jammy > $REPO_DIR/dists/jammy/Release
 
     # Generate the `InRelease` file
+    echo "sigining with"
     gpg --clearsign -o "$REPO_DIR/dists/$SUITE/InRelease" "$REPO_DIR/dists/$SUITE/Release"
     ;;
   *)
@@ -110,7 +111,7 @@ For RPM (YUM/DNF):
 
 For DEB (APT):
 
-  echo "deb [trusted=yes] https://$USER.github.io/$REPO/ $SUITE ${COMPONENT}" | ${sudo} tee /etc/apt/sources.list.d/${REPO}.list"
+  echo "deb [trusted=yes] https://$USER.github.io/$REPO/ $SUITE ${COMPONENT}" | ${sudo} tee "/etc/apt/sources.list.d/${REPO}.list"
 EOF
 
 OUTPUT_SRC_DIR=$PWD # typically /etc/apt/sources.list.d

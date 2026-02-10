@@ -22,9 +22,12 @@ NAME_EMAIL="${NAME_EMAIL:-test@example.invalid}"
 NAME_COMMENT="${NAME_COMMENT:-unattended}"
 KEY_TYPE="${KEY_TYPE:-ed25519}"        # ed25519 or rsa
 KEY_LENGTH="${KEY_LENGTH:-4096}"       # only used for rsa
-EXPIRE="${EXPIRE:-3y}"                 # 0 for no expiration, accepts d and m
+EXPIRE="${EXPIRE:-5y}"                 # 0 for no expiration, accepts d and m
 PASSPHRASE="${PASSPHRASE:-}"           # should probably be set
 EXPORT_DIR="${EXPORT_DIR:-gpg_keys}"           # export keys
+
+EXPIRED="${EXPIRED:-false}"
+
 # -----------------------------------
 # set -x
 check_cmd() {
@@ -56,10 +59,17 @@ generate_key() {
     mkdir -p "$GNUPGHOME"
     chmod 700 "$GNUPGHOME"
   fi
+  gpg_args=(--batch --yes --pinentry-mode loopback)
 
   tmpfile="$(mktemp)"
   cleanup() { rm -f "$tmpfile"; }
   trap cleanup EXIT
+
+  if $EXPIRED; then
+    e=$(date -u -d "yesterday + 2 minutes" +"%Y%m%dT%H%M%S")
+    gpg_args+=(--faked-system-time "$e")
+    EXPIRE=1d
+  fi
 
   # Create a batch file to run gpg keygen
   if [[ "$KEY_TYPE" == "rsa" ]]; then
@@ -83,14 +93,9 @@ EOF
 Key-Type: eddsa
 Key-Curve: ed25519
 Key-Usage: cert,sign
-%% Key-Type must be eddsa for signing key usage
 Subkey-Type: eddsa
 Subkey-Curve: ed25519
 Subkey-Usage: sign
-%% ecdh is for encrytion key usage
-%Subkey-Type: ecdh
-%Subkey-Curve: cv25519
-%Subkey-Usage: encrypt
 Name-Real: ${NAME_REAL}
 Name-Comment: ${NAME_COMMENT}
 Name-Email: ${NAME_EMAIL}
@@ -101,7 +106,6 @@ Expire-Date: ${EXPIRE}
 EOF
   fi
 
-  gpg_args=(--batch --yes --pinentry-mode loopback)
 
   if [[ -n "$PASSPHRASE" ]]; then
     # Remove %no-protection
