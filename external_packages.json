@@ -1,0 +1,7 @@
+[
+  {
+    "url": "https://conan.ripplex.io/artifactory/generic-local/xrpld/rippled_3.1.0-1_amd64.deb",
+    "filename": "pool/stable/rippled_3.1.0-1_amd64.deb",
+    "entry": "Package: rippled\nVersion: 3.1.0-1\nArchitecture: amd64\nMaintainer: Ripple Labs Inc. <support@ripple.com>\nInstalled-Size: 92607\nSection: net\nPriority: optional\nMulti-Arch: foreign\nHomepage: https://github.com/XRPLF/rippled.git\nDescription: XRP Ledger server (rippled)\n rippled is the core server of the XRP Ledger, providing a peer-to-peer\n network node for validating and processing transactions.\nFilename: pool/stable/rippled_3.1.0-1_amd64.deb\nSize: 26075596\nMD5sum: be5a2eeeba4051ff071f1ffb1d5cee79\nSHA1: 735f277d5e4811a53d665881c78a8feb98c92558\nSHA256: 58574a2299db2edf567e09efa25504677cdc66e4fa26f8a84322ab05f3a02996\n"
+  }
+]

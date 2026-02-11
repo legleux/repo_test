@@ -1,128 +1,141 @@
-from pathlib import Path
-import subprocess
-import platform
-import re
-import shutil
 import gzip
+import logging
+import platform
+import shutil
+import subprocess
+from pathlib import Path
 
-project_name = "repo_test"
-repo_name = project_name
-repo_url = "http://127.0.0.1"
-repo_dir = repo_name
-#echo "Setting up DEB repo"
-# os_release = Path("/etc/os-release").read_text()
-# match = re.search(r'^VERSION_CODENAME=(.+)$', os_release, re.MULTILINE)
-# if match:
-#     codename = match.group(1)
-#     print(codename)
+log = logging.getLogger(__name__)
 
-codename = platform.freedesktop_os_release()['VERSION_CODENAME']
 
-# arch_map = {
-#     'x86_64': 'amd64',
-#     'aarch64': 'arm64',
-#     'armv7l': 'armhf',
-#     'i686': 'i386',
-# }
-# arch = arch_map.get(platform.machine(), platform.machine())
-## or just
-arch=subprocess.check_output(["dpkg", "--print-architecture"], text=True).strip()
+def detect_codename() -> str:
+    return platform.freedesktop_os_release()["VERSION_CODENAME"]
 
-component="stable"
-suite=codename
-deb_dir=f"{repo_dir}/dists/{suite}/{component}/binary-{arch}"
-pool_dir=f"{repo_dir}/pool/{component}"
 
-def create_dirs(paths: list):
-    for p in paths:
-        Path(p).mkdir(parents=True, exist_ok=True)
-create_dirs([deb_dir, pool_dir])
+def detect_arch() -> str:
+    return subprocess.check_output(
+        ["dpkg", "--print-architecture"], text=True
+    ).strip()
 
-# def copy_pkgs()
-package="rippled_3.1.0-1_amd64.deb"
-# Copy with pathlib
-shutil.copy2(Path(package), Path(f"{pool_dir}/{package}"))
 
-result = subprocess.run(
-    [
-        'dpkg-scanpackages',
-        '--multiversion',
-        "pool",
-        ],
-    cwd=repo_dir,
-    capture_output=True,
-    text=True
-)
-pkgs_path = Path(f"{repo_dir}/dists/{suite}/{component}/binary-{arch}")
-pkgs = pkgs_path /  "Packages"
-# Path(pkgs_path).mkdir(parents=True, exist_ok=True)
-pkgs.write_text(result.stdout)
+def rebuild_repo(
+    repo_dir: str | Path,
+    deb_source_dir: str | Path,
+    *,
+    project_name: str = "repo_test",
+    codename: str | None = None,
+    arch: str | None = None,
+    component: str = "stable",
+    repo_url: str = "http://127.0.0.1",
+    sign: bool = True,
+    write_sources: bool = False,
+    external_entries: list[str] | None = None,
+) -> None:
+    repo_dir = Path(repo_dir)
+    deb_source_dir = Path(deb_source_dir)
+    codename = codename or detect_codename()
+    arch = arch or detect_arch()
+    suite = codename
 
-with open(pkgs_path / 'Packages', 'rb') as f_in:
-    with gzip.open(pkgs_path / 'Packages.gz', 'wb', compresslevel=9) as f_out:
-        shutil.copyfileobj(f_in, f_out)
+    deb_dir = repo_dir / "dists" / suite / component / f"binary-{arch}"
+    pool_dir = repo_dir / "pool" / component
 
-apt_ftparchive_prefix = "APT::FTPArchive::Release"
-apt_ftparchive_field = {
-    "Origin": project_name,
-    "Label": project_name,
-    "Suite": suite,
-    "Codename": codename,
-    "Architectures": arch,
-    "Components": component,
-    "Description": "A test repo!"
-}
-release = Path(f"{repo_dir}/dists/{suite}/Release")
-inrelease = Path(f"{repo_dir}/dists/{suite}/InRelease")
-apt_ftparchive_bin = "apt-ftparchive"
-args = []
-with release.open("w") as r:
-    for k, v in apt_ftparchive_field.items():
-        args.extend(["-o", f"{apt_ftparchive_prefix}::{k}={v}"])
+    deb_dir.mkdir(parents=True, exist_ok=True)
+    pool_dir.mkdir(parents=True, exist_ok=True)
 
-apt_ftparchive_cmd = [apt_ftparchive_bin, *args, "release", f"{repo_dir}/dists/{codename}"] # > $REPO_DIR/dists/jammy/Release"
-result = subprocess.run(
-    apt_ftparchive_cmd,
-    capture_output = True,
-    text = True
-)
+    # Copy all .deb files from source dir into pool
+    debs = list(deb_source_dir.glob("*.deb"))
+    if not debs:
+        log.warning("No .deb files found in %s", deb_source_dir)
+    for deb in debs:
+        log.info("Copying %s -> %s", deb.name, pool_dir)
+        shutil.copy2(deb, pool_dir / deb.name)
 
-release.write_text(result.stdout)
-
-gpg_cmd=["gpg", "--clearsign", "-o", inrelease, release]
-try:
+    # Generate Packages index
     result = subprocess.run(
-        gpg_cmd,
-        check = True,
-        capture_output = True,
-        text = True
+        ["dpkg-scanpackages", "--multiversion", "pool"],
+        cwd=repo_dir,
+        capture_output=True,
+        text=True,
     )
-    if Path(inrelease).stat().st_size == 0:
-        # print(f"result: {result}")
-        # print(f"STDOUT: {result.stdout}")
-        # print(f"STDERR: {result.stderr}")
-        raise ValueError(f"{inrelease} is empty!")
-except subprocess.CalledProcessError as e:
-    print(f"Command failed with code {e.returncode}")
-    print(f"Error: {e.stderr}")
-except Exception as e:
-    print(f"ERROR! {e}")
-    print(f"{inrelease} file not written!")
+    pkgs = deb_dir / "Packages"
+    pkgs.write_text(result.stdout)
 
-if trusted := False:
-    keypath = "[trusted=yes]"
-else:
-    keypath = f"[signed-by=/etc/apt/keyrings/{repo_name}.gpg]"
+    # Append external package entries (URL-backed packages)
+    if external_entries:
+        with pkgs.open("a") as f:
+            for entry in external_entries:
+                f.write(entry if entry.endswith("\n\n") else entry.rstrip("\n") + "\n\n")
 
-sources = Path(f"/etc/apt/sources.list.d/{repo_name}.list")
-repo_source = f"deb {keypath} {repo_url}/{repo_name}/ {suite} {component}\n"
+    with pkgs.open("rb") as f_in:
+        with gzip.open(deb_dir / "Packages.gz", "wb", compresslevel=9) as f_out:
+            shutil.copyfileobj(f_in, f_out)
 
-sources.write_text(repo_source, encoding="utf-8")
+    log.info("Packages index written to %s", deb_dir)
 
-# APT::FTPArchive::Release::Origin "Repo Test";
-# APT::FTPArchive::Release::Label "Repo Test";
-# APT::FTPArchive::Release::Suite $DISTRO_CODENAME;
-# APT::FTPArchive::Release::Codename $DISTRO_CODENAME;
-# APT::FTPArchive::Release::Architectures $archs;
-# APT::FTPArchive::Release::Components $COMPONENT;
-# APT::FTPArchive::Release::Description "Repo Test (${DISTRO_CODENAME})";
+    # Generate Release file
+    apt_ftparchive_fields = {
+        "Origin": project_name,
+        "Label": project_name,
+        "Suite": suite,
+        "Codename": codename,
+        "Architectures": arch,
+        "Components": component,
+        "Description": f"{project_name} ({codename})",
+    }
+    prefix = "APT::FTPArchive::Release"
+    args = []
+    for k, v in apt_ftparchive_fields.items():
+        args.extend(["-o", f"{prefix}::{k}={v}"])
+
+    release_path = repo_dir / "dists" / suite / "Release"
+    inrelease_path = repo_dir / "dists" / suite / "InRelease"
+
+    result = subprocess.run(
+        ["apt-ftparchive", *args, "release", str(repo_dir / "dists" / codename)],
+        capture_output=True,
+        text=True,
+    )
+    release_path.write_text(result.stdout)
+    log.info("Release written to %s", release_path)
+
+    # GPG sign
+    if sign:
+        inrelease_path.unlink(missing_ok=True)
+        try:
+            subprocess.run(
+                ["gpg", "--clearsign", "-o", str(inrelease_path), str(release_path)],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            if inrelease_path.stat().st_size == 0:
+                raise ValueError(f"{inrelease_path} is empty!")
+            log.info("InRelease signed at %s", inrelease_path)
+        except subprocess.CalledProcessError as e:
+            log.error("GPG signing failed (code %d): %s", e.returncode, e.stderr)
+        except Exception as e:
+            log.error("Signing error: %s", e)
+    else:
+        log.info("Skipping GPG signing (sign=False)")
+
+    # Write APT sources list entry
+    if write_sources:
+        repo_name = project_name
+        keypath = f"[signed-by=/etc/apt/keyrings/{repo_name}.gpg]"
+        sources = Path(f"/etc/apt/sources.list.d/{repo_name}.list")
+        repo_source = f"deb {keypath} {repo_url}/{repo_name}/ {suite} {component}\n"
+        sources.write_text(repo_source, encoding="utf-8")
+        log.info("APT source written to %s", sources)
+
+    log.info("Repository rebuild complete")
+
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
+    rebuild_repo(
+        repo_dir="repo_test",
+        deb_source_dir=Path.cwd(),
+        sign=True,
+        write_sources=True,
+    )

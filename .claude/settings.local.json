@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(du:*)",
+      "Bash(uv:*)",
+      "WebSearch",
+      "WebFetch(domain:wiki.debian.org)",
+      "WebFetch(domain:www.debian.org)",
+      "mcp__ide__getDiagnostics"
+    ]
+  }
+}
